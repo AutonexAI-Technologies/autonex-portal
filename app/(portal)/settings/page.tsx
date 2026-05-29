@@ -56,26 +56,26 @@ export default function SettingsPage() {
 
   return (
     <div className="px-6 py-8 max-w-lg mx-auto">
-      <div className="mb-8"><h1 className="text-2xl font-bold text-white">Settings</h1><p className="text-slate-500 text-sm mt-1">Manage your profile and preferences</p></div>
+      <div className="mb-8"><h1 className="text-2xl font-bold text-slate-900">Settings</h1><p className="text-slate-500 text-sm mt-1">Manage your profile and preferences</p></div>
 
       {/* Profile */}
-      <motion.form initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onSubmit={saveProfile} className="glass-card p-6 space-y-4 mb-6">
-        <h2 className="text-sm font-semibold text-white flex items-center gap-2"><User className="w-4 h-4 text-blue-400" /> Profile</h2>
-        {error && <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">{error}</div>}
+      <motion.form initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onSubmit={saveProfile} className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 mb-6 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2"><User className="w-4 h-4 text-blue-600" /> Profile</h2>
+        {error && <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs">{error}</div>}
 
         <div>
           <label className="text-xs text-slate-400 mb-1.5 block">Full Name</label>
-          <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-            <input value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className="input-dark w-full pl-10" /></div>
+          <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <input value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className="input-dark w-full pl-10" placeholder="Full name" /></div>
         </div>
         <div>
           <label className="text-xs text-slate-400 mb-1.5 block">Phone</label>
-          <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-            <input value={profile.phone} onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))} className="input-dark w-full pl-10" /></div>
+          <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <input value={profile.phone} onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))} className="input-dark w-full pl-10" placeholder="Phone number" /></div>
         </div>
         <div>
           <label className="text-xs text-slate-400 mb-1.5 block">Email</label>
-          <input value={authUser?.email || ''} disabled className="input-dark w-full opacity-50 cursor-not-allowed" />
+          <input value={authUser?.email || ''} disabled className="input-dark w-full opacity-60 cursor-not-allowed" />
         </div>
 
         <button type="submit" disabled={saving} className="btn-primary w-full flex items-center justify-center gap-2">
@@ -84,15 +84,15 @@ export default function SettingsPage() {
       </motion.form>
 
       {/* Password */}
-      <motion.form initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} onSubmit={changePassword} className="glass-card p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Lock className="w-4 h-4 text-violet-400" /> Change Password</h2>
-        {pwError && <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">{pwError}</div>}
+      <motion.form initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} onSubmit={changePassword} className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2"><Lock className="w-4 h-4 text-violet-600" /> Change Password</h2>
+        {pwError && <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs">{pwError}</div>}
 
         <div>
           <label className="text-xs text-slate-400 mb-1.5 block">New Password</label>
-          <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+          <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input type={showPw ? 'text' : 'password'} value={pw.newPw} onChange={e => setPw(p => ({ ...p, newPw: e.target.value }))} placeholder="Min 8 characters" className="input-dark w-full pl-10 pr-10" minLength={8} />
-            <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600">{showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+            <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">{showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
           </div>
         </div>
         <div>
