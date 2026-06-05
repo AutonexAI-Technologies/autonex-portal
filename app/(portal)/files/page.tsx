@@ -6,9 +6,10 @@ import { usePortalUser } from '@/lib/usePortalUser'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FolderOpen, Upload, Download, FileText, Image, Video,
-  FileArchive, Trash2, Loader2, RefreshCw, Music
+  FileArchive, Trash2, Loader2, RefreshCw, Music, AlertCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
+import { useToast } from '@/hooks/use-toast'
 
 function getFileIcon(type: string) {
   if (type.startsWith('image')) return Image
@@ -27,10 +28,12 @@ function formatSize(bytes: number) {
 
 export default function FilesPage() {
   const { clientId, user, authUser, loading: userLoading } = usePortalUser()
+  const { toast } = useToast()
   const [files, setFiles] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
+  const [uploadError, setUploadError] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [drag, setDrag] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -55,8 +58,13 @@ export default function FilesPage() {
   useEffect(() => { load() }, [load])
 
   const upload = async (fileList: FileList, replaceFile?: any) => {
-    if (!clientId || !authUser) return
+    if (!authUser) {
+      toast({ variant: 'destructive', title: 'Please log in to upload files' })
+      return
+    }
     setUploading(true)
+    setUploadError('')
+    let successCount = 0
 
     for (const file of Array.from(fileList)) {
       setUploadProgress(`Uploading ${file.name}…`)
@@ -70,16 +78,24 @@ export default function FilesPage() {
       form.append('file', file)
 
       const res = await fetch('/api/portal/files/upload', { method: 'POST', body: form })
-      if (!res.ok) {
+      if (res.ok) {
+        successCount++
+      } else {
         const err = await res.json().catch(() => ({}))
-        console.error('Upload error:', err.error)
+        const msg = err.error || 'Upload failed'
+        setUploadError(msg)
+        toast({ variant: 'destructive', title: `Failed to upload ${file.name}`, description: msg })
+        console.error('[portal upload]', msg)
       }
     }
 
     setUploading(false)
     setUploadProgress('')
     setReplaceTarget(null)
-    load()
+    if (successCount > 0) {
+      toast({ title: `✅ ${successCount} file${successCount > 1 ? 's' : ''} uploaded!` })
+      load()
+    }
   }
 
   const download = async (f: any) => {
