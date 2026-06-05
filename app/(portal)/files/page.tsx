@@ -41,7 +41,9 @@ export default function FilesPage() {
     if (!clientId) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/files?client_id=${clientId}`)
+      const res = await fetch('/api/portal/files', {
+        headers: { 'x-client-id': clientId },
+      })
       const data = await res.json()
       setFiles(Array.isArray(data) ? data : [])
     } catch {
