@@ -52,9 +52,10 @@ const STATUS_ICON: Record<string, any> = {
 }
 
 export default function PortalDashboard() {
-  const { user, clientId, loading: userLoading } = usePortalUser()
+  const { user, clientId, authUser, loading: userLoading } = usePortalUser()
   const supabase = createClient()
   const [data, setData] = useState<any>(null)
+  const [clientName, setClientName] = useState<string>('')
   const [loading, setLoading] = useState(false)
 
   const load = useCallback(async () => {
@@ -67,13 +68,16 @@ export default function PortalDashboard() {
         { data: invoices },
         { data: messages },
         { data: tasks },
+        { data: clientRow },
       ] = await Promise.all([
         supabase.from('projects').select('*').eq('client_id', clientId).maybeSingle(),
         supabase.from('project_milestones').select('*').eq('client_id', clientId).order('sort_order'),
         supabase.from('invoices').select('id,status').eq('client_id', clientId),
         supabase.from('chat_threads').select('id,unread_count').eq('client_id', clientId),
         supabase.from('onboarding_tasks').select('id,status').eq('client_id', clientId),
+        supabase.from('clients').select('name,company').eq('id', clientId).maybeSingle(),
       ])
+      if (clientRow?.name) setClientName(clientRow.name)
       setData({ project, milestones: milestones ?? [], invoices: invoices ?? [], messages: messages ?? [], tasks: tasks ?? [] })
     } finally {
       setLoading(false)
@@ -116,7 +120,9 @@ export default function PortalDashboard() {
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <p className="text-slate-500 text-sm">Welcome back,</p>
-            <h1 className="text-3xl font-bold text-slate-900 mt-0.5">{user?.name?.split(' ')[0] || 'there'} 👋</h1>
+            <h1 className="text-3xl font-bold text-slate-900 mt-0.5">
+              {(user?.name || authUser?.user_metadata?.name || authUser?.user_metadata?.full_name || clientName || 'there').split(' ')[0]} 👋
+            </h1>
           </div>
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />

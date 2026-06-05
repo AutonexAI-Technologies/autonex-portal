@@ -17,8 +17,8 @@ export function usePortalUser() {
   const supabase = createClient()
   const [user, setUser] = useState<PortalUser | null>(null)
   const [clientId, setClientId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
   const [authUser, setAuthUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
@@ -27,21 +27,33 @@ export function usePortalUser() {
         if (!au) { setLoading(false); return }
         setAuthUser(au)
 
-        // Always query portal_users table first — this is the source of truth
-        const { data: pu } = await supabase
-          .from('portal_users')
-          .select('*')
-          .eq('user_id', au.id)
-          .maybeSingle()
+        // Use admin API to bypass RLS — always reliable
+        const res = await fetch('/api/portal/settings')
+        if (res.ok) {
+          const pu = await res.json()
+          if (pu && pu.client_id) {
+            setUser(pu as PortalUser)
+            setClientId(pu.client_id)
+            setLoading(false)
+            return
+          }
+        }
 
-        if (pu) {
-          // Found a portal_users record — use its client_id
-          setUser(pu as PortalUser)
-          setClientId(pu.client_id)
-        } else {
-          // Fallback: try app_metadata.client_id (set during invite acceptance)
-          const cidFromMeta = au.app_metadata?.client_id
-          if (cidFromMeta) setClientId(cidFromMeta)
+        // Fallback: try app_metadata.client_id (set during invite)
+        const cidFromMeta = au.app_metadata?.client_id
+        if (cidFromMeta) setClientId(cidFromMeta)
+
+        // Also try user_metadata for name
+        if (au.user_metadata?.name || au.user_metadata?.full_name) {
+          setUser({
+            id: '',
+            user_id: au.id,
+            client_id: cidFromMeta || '',
+            name: au.user_metadata?.name || au.user_metadata?.full_name || '',
+            email: au.email || '',
+            phone: null,
+            portal_role: au.app_metadata?.portal_role || 'client_viewer',
+          })
         }
       } catch (err) {
         console.error('[usePortalUser] error:', err)
@@ -50,7 +62,7 @@ export function usePortalUser() {
       }
     }
     load()
-  }, [])
+  }, []) // eslint-disable-line
 
   return { user, clientId, authUser, loading }
 }
