@@ -2,7 +2,6 @@
 export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -55,14 +54,13 @@ export default function LoginPage() {
         >
           <div className="flex flex-col items-center gap-3 mb-6">
             <div className="flex flex-col items-center gap-1.5">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo_small.png"
                 alt="Autonex AI"
-                width={160}
-                height={40}
-                priority
-                className="object-contain"
+                style={{ height: 44, objectFit: 'contain', display: 'block' }}
               />
+              <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Client Portal</p>
             </div>
             <p className="text-slate-500 text-sm">Sign in to access your project dashboard</p>
           </div>
