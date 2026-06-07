@@ -53,14 +53,14 @@ export default function LoginPage() {
           className="text-center mb-8"
         >
           <div className="flex flex-col items-center gap-3 mb-6">
-            <div className="flex flex-col items-center gap-1.5">
+            {/* Official Autonex AI logo on dark branded background */}
+            <div style={{ background: '#1A3566', borderRadius: '14px', padding: '16px 32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/logo_small.png"
+                src="/logo.png"
                 alt="Autonex AI"
-                style={{ height: 44, objectFit: 'contain', display: 'block' }}
+                style={{ height: 52, objectFit: 'contain', display: 'block' }}
               />
-              <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Client Portal</p>
             </div>
             <p className="text-slate-500 text-sm">Sign in to access your project dashboard</p>
           </div>
