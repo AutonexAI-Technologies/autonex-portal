@@ -10,11 +10,11 @@ import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucid
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
-  const [email, setEmail] = useState('')
+  const [email, setEmail]     = useState('')
   const [password, setPassword] = useState('')
-  const [showPw, setShowPw] = useState(false)
+  const [showPw, setShowPw]   = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError]     = useState('')
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -31,13 +31,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
-      {/* Ambient background blobs */}
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #0a1628 100%)' }}>
+
+      {/* Ambient blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-blue-200/30 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-violet-200/20 rounded-full blur-[100px]" />
-        <div className="absolute top-1/3 left-1/4 w-48 h-48 bg-cyan-200/15 rounded-full blur-[80px]" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[140px]"
+          style={{ background: 'rgba(37,99,235,0.12)' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-[100px]"
+          style={{ background: 'rgba(124,58,237,0.08)' }} />
+        <div className="absolute top-1/3 left-1/4 w-48 h-48 rounded-full blur-[80px]"
+          style={{ background: 'rgba(6,182,212,0.07)' }} />
       </div>
+
+      {/* Grid overlay */}
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -52,9 +61,17 @@ export default function LoginPage() {
           transition={{ delay: 0.1 }}
           className="text-center mb-8"
         >
-          <div className="flex flex-col items-center gap-3 mb-6">
-            {/* Official Autonex AI logo on dark branded background */}
-            <div style={{ background: '#1A3566', borderRadius: '14px', padding: '16px 32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="flex flex-col items-center gap-3 mb-4">
+            <div style={{
+              background: '#1A3566',
+              borderRadius: '16px',
+              padding: '18px 36px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 40px rgba(37,99,235,0.3)',
+              border: '1px solid rgba(255,255,255,0.08)'
+            }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo.png"
@@ -62,7 +79,9 @@ export default function LoginPage() {
                 style={{ height: 52, objectFit: 'contain', display: 'block' }}
               />
             </div>
-            <p className="text-slate-500 text-sm">Sign in to access your project dashboard</p>
+            <p className="text-sm" style={{ color: 'rgba(148,163,184,0.8)' }}>
+              Client Portal · Sign in to your dashboard
+            </p>
           </div>
         </motion.div>
 
@@ -71,16 +90,24 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '20px',
+            padding: '32px',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.4)'
+          }}
         >
-          <h1 className="text-xl font-semibold text-slate-900 mb-1">Welcome back</h1>
-          <p className="text-slate-500 text-sm mb-6">Enter your credentials to continue</p>
+          <h1 className="text-xl font-semibold mb-1" style={{ color: '#f1f5f9' }}>Welcome back</h1>
+          <p className="text-sm mb-6" style={{ color: 'rgba(148,163,184,0.7)' }}>Enter your credentials to continue</p>
 
           {error && (
             <motion.div
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 px-3 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs"
+              className="mb-4 px-3 py-2.5 rounded-xl text-xs"
+              style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5' }}
             >
               {error}
             </motion.div>
@@ -88,9 +115,11 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-xs text-slate-600 mb-1.5 block font-medium">Email Address</label>
+              <label className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(148,163,184,0.9)' }}>
+                Email Address
+              </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(148,163,184,0.5)' }} />
                 <input
                   id="portal-email"
                   type="email"
@@ -99,15 +128,31 @@ export default function LoginPage() {
                   placeholder="you@company.com"
                   required
                   autoComplete="email"
-                  className="w-full pl-10 pr-4 h-11 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none text-sm transition-all"
+                  style={{
+                    width: '100%',
+                    paddingLeft: '2.75rem',
+                    paddingRight: '1rem',
+                    height: '44px',
+                    borderRadius: '12px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#f1f5f9',
+                    fontSize: '14px',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = 'rgba(59,130,246,0.6)'}
+                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-slate-600 mb-1.5 block font-medium">Password</label>
+              <label className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(148,163,184,0.9)' }}>
+                Password
+              </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(148,163,184,0.5)' }} />
                 <input
                   id="portal-password"
                   type={showPw ? 'text' : 'password'}
@@ -116,12 +161,27 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full pl-10 pr-10 h-11 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none text-sm transition-all"
+                  style={{
+                    width: '100%',
+                    paddingLeft: '2.75rem',
+                    paddingRight: '2.75rem',
+                    height: '44px',
+                    borderRadius: '12px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#f1f5f9',
+                    fontSize: '14px',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = 'rgba(59,130,246,0.6)'}
+                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: 'rgba(148,163,184,0.5)' }}
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -132,28 +192,46 @@ export default function LoginPage() {
               id="portal-login-btn"
               type="submit"
               disabled={loading}
-              className="w-full h-11 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(37,99,235,0.35)] disabled:opacity-50 disabled:pointer-events-none mt-2"
+              style={{
+                width: '100%',
+                height: '44px',
+                borderRadius: '12px',
+                background: loading ? 'rgba(37,99,235,0.5)' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '600',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginTop: '8px',
+                boxShadow: '0 4px 20px rgba(37,99,235,0.35)',
+                transition: 'all 0.2s',
+              }}
             >
               {loading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /><span>Signing in...</span></>
+                <><Loader2 className="w-4 h-4 animate-spin" /><span>Signing in…</span></>
               ) : (
                 <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>
               )}
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-slate-200 flex items-center justify-between">
-            <a href="/reset-password" className="text-xs text-blue-600 hover:text-blue-700 transition-colors font-medium">
+          <div className="flex items-center justify-between mt-6 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <a href="/reset-password" className="text-xs font-medium transition-colors"
+              style={{ color: '#3b82f6' }}>
               Forgot password?
             </a>
-            <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+            <div className="flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(148,163,184,0.5)' }}>
               <ShieldCheck className="w-3 h-3" />
-              <span>Secure &amp; encrypted</span>
+              <span>Secure & encrypted</span>
             </div>
           </div>
         </motion.div>
 
-        <p className="text-center text-[11px] text-slate-400 mt-5">
+        <p className="text-center text-[11px] mt-5" style={{ color: 'rgba(148,163,184,0.4)' }}>
           Invitation-only access · Autonex AI Technologies
         </p>
       </motion.div>

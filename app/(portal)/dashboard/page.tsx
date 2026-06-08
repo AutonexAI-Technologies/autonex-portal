@@ -54,9 +54,10 @@ const STATUS_ICON: Record<string, any> = {
 export default function PortalDashboard() {
   const { user, clientId, authUser, loading: userLoading } = usePortalUser()
   const supabase = createClient()
-  const [data, setData] = useState<any>(null)
+  const [data, setData]           = useState<any>(null)
   const [clientName, setClientName] = useState<string>('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading]     = useState(false)
+  const [assignments, setAssignments] = useState<any[]>([])
 
   const load = useCallback(async () => {
     if (!clientId) return
@@ -69,6 +70,7 @@ export default function PortalDashboard() {
         { data: messages },
         { data: tasks },
         { data: clientRow },
+        teamsRes,
       ] = await Promise.all([
         supabase.from('projects').select('*').eq('client_id', clientId).maybeSingle(),
         supabase.from('project_milestones').select('*').eq('client_id', clientId).order('sort_order'),
@@ -76,9 +78,14 @@ export default function PortalDashboard() {
         supabase.from('chat_threads').select('id,unread_count').eq('client_id', clientId),
         supabase.from('onboarding_tasks').select('id,status').eq('client_id', clientId),
         supabase.from('clients').select('name,company').eq('id', clientId).maybeSingle(),
+        fetch('/api/portal/teams'),
       ])
       if (clientRow?.name) setClientName(clientRow.name)
       setData({ project, milestones: milestones ?? [], invoices: invoices ?? [], messages: messages ?? [], tasks: tasks ?? [] })
+      if (teamsRes.ok) {
+        const teamsData = await teamsRes.json()
+        setAssignments(teamsData.assignments ?? [])
+      }
     } finally {
       setLoading(false)
     }
@@ -197,6 +204,47 @@ export default function PortalDashboard() {
           ))}
         </div>
       </motion.div>
+
+      {/* Your Team */}
+      {assignments.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+          className="glass-card p-4 mb-6">
+          <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">Your Assigned Teams</p>
+          <div className="space-y-3">
+            {assignments.map((a: any) => {
+              const members = a.teams?.team_memberships ?? []
+              const head = members.find((m: any) => m.is_lead)
+              return (
+                <div key={a.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: (a.teams?.color || '#3b82f6') + '18', border: `1.5px solid ${a.teams?.color || '#3b82f6'}30` }}>
+                    <span className="text-xs font-bold" style={{ color: a.teams?.color || '#3b82f6' }}>
+                      {(a.teams?.name || 'T').charAt(0)}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">{a.teams?.name}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {members.slice(0, 5).map((m: any) => (
+                        <span key={m.id} className="text-[10px] px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-slate-600">
+                          {m.is_lead ? '👑 ' : ''}{m.team_members?.name?.split(' ')[0]}
+                        </span>
+                      ))}
+                      {members.length > 5 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-slate-400">+{members.length - 5} more</span>
+                      )}
+                    </div>
+                  </div>
+                  <Link href="/messages"
+                    className="text-[10px] px-2 py-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 font-semibold hover:bg-blue-100 transition-colors shrink-0">
+                    Message
+                  </Link>
+                </div>
+              )
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Milestones list */}
       {milestones && milestones.length > 0 && (
