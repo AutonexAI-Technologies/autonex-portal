@@ -3,27 +3,27 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { usePortalUser } from '@/lib/usePortalUser'
 import {
   LayoutDashboard, Milestone, FileText, Receipt, MessageSquare,
   FolderOpen, ClipboardList, LifeBuoy, Gift, Star, Settings,
-  LogOut, ChevronRight, Menu, X, User,
+  LogOut, ChevronRight, Menu, X, User, Users,
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
-  { href: '/timeline',    label: 'Timeline',    icon: Milestone },
-  { href: '/documents',   label: 'Documents',   icon: FileText },
-  { href: '/invoices',    label: 'Invoices',    icon: Receipt },
-  { href: '/messages',    label: 'Messages',    icon: MessageSquare },
-  { href: '/files',       label: 'Files',       icon: FolderOpen },
-  { href: '/onboarding',  label: 'Onboarding',  icon: ClipboardList },
-  { href: '/support',     label: 'Support',     icon: LifeBuoy },
-  { href: '/referrals',   label: 'Referrals',   icon: Gift },
-  { href: '/feedback',    label: 'Feedback',    icon: Star },
-  { href: '/settings',    label: 'Settings',    icon: Settings },
+  { href: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
+  { href: '/timeline',   label: 'Timeline',   icon: Milestone },
+  { href: '/documents',  label: 'Documents',  icon: FileText },
+  { href: '/invoices',   label: 'Invoices',   icon: Receipt },
+  { href: '/messages',   label: 'Messages',   icon: MessageSquare },
+  { href: '/files',      label: 'Files',      icon: FolderOpen },
+  { href: '/onboarding', label: 'Onboarding', icon: ClipboardList },
+  { href: '/support',    label: 'Support',    icon: LifeBuoy },
+  { href: '/referrals',  label: 'Referrals',  icon: Gift },
+  { href: '/feedback',   label: 'Feedback',   icon: Star },
+  { href: '/settings',   label: 'Settings',   icon: Settings },
 ]
 
 function NavItem({ item, active, onClick }: { item: typeof navItems[0]; active: boolean; onClick?: () => void }) {
@@ -42,7 +42,15 @@ export default function PortalSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [assignments, setAssignments] = useState<any[]>([])
   const { user } = usePortalUser()
+
+  useEffect(() => {
+    fetch('/api/portal/teams')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.assignments) setAssignments(d.assignments) })
+      .catch(() => {})
+  }, [])
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -82,6 +90,27 @@ export default function PortalSidebar() {
           const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           return <NavItem key={item.href} item={item} active={active} onClick={() => setMobileOpen(false)} />
         })}
+
+        {/* Assigned Teams section */}
+        {assignments.length > 0 && (
+          <div className="pt-3 mt-2 border-t border-white/5">
+            <p className="px-3 text-[9px] font-semibold uppercase tracking-widest text-slate-600 mb-1.5 flex items-center gap-1.5">
+              <Users className="w-3 h-3" /> Your Teams
+            </p>
+            {assignments.map((a: any) => (
+              <div key={a.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                <div className="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[8px] font-bold"
+                  style={{ backgroundColor: (a.teams?.color || '#3b82f6') + '25', color: a.teams?.color || '#3b82f6' }}>
+                  {(a.teams?.name || 'T').charAt(0)}
+                </div>
+                <span className="text-[11px] text-slate-400 truncate">{a.teams?.name}</span>
+                <span className="text-[9px] text-slate-600 ml-auto shrink-0">
+                  {(a.teams?.team_memberships?.length ?? 0)} 👤
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </nav>
 
       {/* Sign out */}
@@ -101,7 +130,7 @@ export default function PortalSidebar() {
         {sidebarContent}
       </aside>
 
-      {/* Mobile menu button — positioned below TopBar (h-14 = 56px) */}
+      {/* Mobile menu button */}
       <button onClick={() => setMobileOpen(true)} className="lg:hidden fixed top-[4.25rem] left-4 z-40 w-9 h-9 rounded-xl bg-[#0d1a35] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
         <Menu className="w-4 h-4" />
       </button>
