@@ -3,12 +3,14 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff, ShieldCheck, AlertTriangle } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const errorParam = searchParams.get('error')
   const supabase = createClient()
   const [email, setEmail]     = useState('')
   const [password, setPassword] = useState('')
@@ -107,6 +109,16 @@ export default function LoginPage() {
         >
           <h1 className="text-xl font-semibold mb-1" style={{ color: '#f1f5f9' }}>Welcome back</h1>
           <p className="text-sm mb-6" style={{ color: 'rgba(148,163,184,0.7)' }}>Enter your credentials to continue</p>
+
+          {errorParam === 'access_denied' && (
+            <div className="mb-5 p-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-xs flex gap-2 items-start leading-relaxed">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-semibold block mb-0.5">Access Denied</strong>
+                Your account is deactivated or has been removed from this Portal workspace.
+              </div>
+            </div>
+          )}
 
           {error && (
             <motion.div

@@ -28,14 +28,37 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const email = user?.email?.toLowerCase()
 
   // Redirect unauthenticated users to login
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  // Verify client portal user is active and exists in the database
+  if (email) {
+    const { data: portalUser } = await supabase
+      .from('portal_users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (!portalUser) {
+      const url = new URL('/login', request.url)
+      url.searchParams.set('error', 'access_denied')
+      const res = NextResponse.redirect(url)
+      
+      // Clear all Supabase cookies to log them out
+      request.cookies.getAll().forEach(cookie => {
+        if (cookie.name.includes('supabase') || cookie.name.startsWith('sb-')) {
+          res.cookies.delete(cookie.name)
+        }
+      })
+      return res
+    }
+  }
+
   // Only block if user_type is explicitly set to 'team' (internal staff)
-  // Portal users may have user_type='client' OR no user_type at all
   const userType = user.app_metadata?.user_type
   if (userType === 'team') {
     return NextResponse.redirect(new URL('/login?error=access_denied', request.url))
