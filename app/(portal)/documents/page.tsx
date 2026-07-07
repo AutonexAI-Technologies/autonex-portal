@@ -25,11 +25,12 @@ export default function DocumentsPage() {
 
   useEffect(() => { load() }, [load])
 
-  async function download(fileId: string, fileName: string) {
-    const res = await fetch(`/api/portal/files/signed-url?file_id=${fileId}`)
-    if (!res.ok) return
-    const { url } = await res.json()
-    const a = document.createElement('a'); a.href = url; a.download = fileName; a.click()
+  function download(fileId: string, fileName: string) {
+    // Use proxy endpoint — Supabase URL never exposed in browser
+    const a = document.createElement('a')
+    a.href = `/api/portal/files/download?file_id=${fileId}`
+    a.download = fileName
+    a.click()
   }
 
   if (userLoading || loading) return <div className="flex items-center justify-center h-64"><div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
