@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 
+// ── Founder / Super-Admin email — unrestricted access everywhere ───────────
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'autonexai.org@gmail.com').toLowerCase()
+
 /**
  * Creates a service-role admin client that bypasses RLS.
- * Used in middleware to check portal_users existence without
- * being blocked by RLS policies that depend on client session state.
+ * Used to verify portal_users existence without being blocked
+ * by RLS policies that depend on JWT app_metadata state.
  */
 function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -14,6 +17,7 @@ function createAdminClient() {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 }
+
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -52,13 +56,29 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const email = user?.email?.toLowerCase()
 
-  // ── Block team members from accessing the client portal ──────────────────
+  // ── Founder bypass: admin has unrestricted access to portal ───────────────
+  // Admin has no portal_users record (they're a team member) so we
+  // must whitelist explicitly to allow testing/previewing the portal.
+  if (user && email === ADMIN_EMAIL) {
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+    return response
+  }
+
+  // ── Block CRM team members from client portal ─────────────────────────────
   if (user) {
     const userType = user.app_metadata?.user_type
     if (userType === 'team') {
       const url = new URL('/login', request.url)
       url.searchParams.set('error', 'access_denied')
-      return NextResponse.redirect(url)
+      const res = NextResponse.redirect(url)
+      request.cookies.getAll().forEach(cookie => {
+        if (cookie.name.includes('supabase') || cookie.name.startsWith('sb-')) {
+          res.cookies.delete(cookie.name)
+        }
+      })
+      return res
     }
   }
 
