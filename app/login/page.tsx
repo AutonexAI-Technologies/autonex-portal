@@ -65,7 +65,7 @@ export default function LoginPage() {
             <div style={{
               background: '#1A3566',
               borderRadius: '16px',
-              padding: '18px 36px',
+              padding: '16px 28px',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -76,14 +76,20 @@ export default function LoginPage() {
               <img
                 src="/logo.png"
                 alt="Autonex AI"
-                style={{ height: 52, objectFit: 'contain', display: 'block' }}
+                style={{ height: 44, objectFit: 'contain', display: 'block' }}
               />
             </div>
-            <p className="text-sm" style={{ color: 'rgba(148,163,184,0.8)' }}>
-              Client Portal · Sign in to your dashboard
-            </p>
+            <div className="text-center">
+              <h1 className="text-xl font-bold tracking-widest uppercase" style={{ color: '#f1f5f9', letterSpacing: '0.18em' }}>
+                AUTONEX AI
+              </h1>
+              <p className="text-[11px] tracking-widest uppercase mt-0.5" style={{ color: 'rgba(148,163,184,0.6)', letterSpacing: '0.12em' }}>
+                Automate Today, Lead Tomorrow
+              </p>
+            </div>
           </div>
         </motion.div>
+
 
         {/* Card */}
         <motion.div

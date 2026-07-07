@@ -15,7 +15,7 @@ export default function ResetPasswordPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true)
-    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/settings` })
+    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/settings` })
     setSent(true); setLoading(false)
   }
 

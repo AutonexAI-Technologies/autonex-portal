@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
@@ -27,8 +28,12 @@ export async function POST(req: NextRequest, { params }: { params: { threadId: s
       content: body.content,
     }).select().single()
     if (error) throw error
-    // Update thread timestamp
-    await admin.from('chat_threads').update({ updated_at: new Date().toISOString() }).eq('id', params.threadId)
+    // Update thread last_message, last_message_at
+    await admin.from('chat_threads').update({
+      last_message: body.content,
+      last_message_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq('id', params.threadId)
     return NextResponse.json(data)
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

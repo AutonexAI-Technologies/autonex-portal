@@ -1,5 +1,6 @@
 import QRCode from 'qrcode'
 import { Client } from '@/types'
+import { LOGO_IMG_TAG } from './logo'
 
 interface InvoiceData {
   invoice_number?: string
@@ -28,7 +29,7 @@ export async function generateInvoiceHTML(client: Client, invoice?: InvoiceData,
     dueDateRaw = new Date(invoice.due_date)
     dueDate = dueDateRaw.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
   }
-  const isOverdue = !isPaid && dueDateRaw && dueDateRaw < new Date()
+  const isOverdue = invoice?.status === 'Overdue' || (!isPaid && dueDateRaw && dueDateRaw < new Date())
 
   // line_items can be a JSON string (from DB) or already an array
   const rawItems = invoice?.line_items
@@ -58,14 +59,6 @@ export async function generateInvoiceHTML(client: Client, invoice?: InvoiceData,
     color: { dark: '#0A0F1E', light: '#FFFFFF' },
   })
 
-  // Inline SVG logo
-  const logo = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="38" viewBox="0 0 150 38">
-    <rect x="0" y="5" width="28" height="28" rx="6" fill="#0060FF"/>
-    <text x="8" y="25" font-size="17" font-weight="900" font-family="Arial" fill="#FFFFFF">A</text>
-    <text x="34" y="25" font-size="18" font-weight="800" font-family="Arial,sans-serif" fill="white" letter-spacing="-0.5">Autonex</text>
-    <text x="112" y="25" font-size="18" font-weight="800" font-family="Arial,sans-serif" fill="#00D4AA" letter-spacing="-0.5"> AI</text>
-  </svg>`
-
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/>
 <title>Invoice ${invoiceNum} — Autonex AI Technologies</title>
@@ -75,21 +68,21 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a2e;fo
 .page{max-width:794px;margin:0 auto;min-height:1123px;display:flex;flex-direction:column;position:relative;overflow:hidden}
 
 /* PAID watermark */
-.watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:96px;font-weight:900;color:rgba(16,185,129,0.08);letter-spacing:8px;white-space:nowrap;pointer-events:none;z-index:0;font-family:Arial}
+.watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:96px;font-weight:900;color:rgba(239,68,68,0.08);letter-spacing:8px;white-space:nowrap;pointer-events:none;z-index:0;font-family:Arial}
 .watermark.overdue{color:rgba(239,68,68,0.08)}
 
 /* HEADER */
 .header{background:#0A0F1E;padding:26px 44px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
 .header-right{text-align:right}
 .inv-word{font-size:32px;font-weight:900;color:#ffffff;letter-spacing:-1.5px;line-height:1}
-.inv-num{font-size:13px;color:#00D4AA;font-weight:700;margin-top:5px;letter-spacing:1px;font-family:monospace}
+.inv-num{font-size:13px;color:#60A5FA;font-weight:700;margin-top:5px;letter-spacing:1px;font-family:monospace}
 .inv-status{display:inline-block;margin-top:5px;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
-.inv-status.paid{background:#10b981;color:white}
+.inv-status.paid{background:#0060FF;color:white}
 .inv-status.overdue{background:#ef4444;color:white}
 .inv-status.pending{background:#f59e0b;color:white}
 
 /* GRADIENT BAR */
-.bar{height:4px;background:linear-gradient(90deg,#00D4AA 0%,#0060FF 60%,#7c3aed 100%);position:relative;z-index:1}
+.bar{height:4px;background:linear-gradient(90deg,#3B82F6 0%,#0060FF 60%,#7c3aed 100%);position:relative;z-index:1}
 
 /* META STRIP */
 .meta{display:flex;justify-content:space-between;align-items:stretch;padding:20px 44px;background:#F6F8FF;border-bottom:1px solid #E4E9F8;position:relative;z-index:1}
@@ -107,10 +100,10 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a2e;fo
 .parties{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
 .party{padding:16px 20px;border-radius:12px;border:1px solid #E4E9F8;background:#F9FAFF}
 .party-from{border-left:3px solid #0060FF}
-.party-to{border-left:3px solid #00D4AA}
+.party-to{border-left:3px solid #60A5FA}
 .party-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:10px}
 .party-label.from{color:#0060FF}
-.party-label.to{color:#00D4AA}
+.party-label.to{color:#60A5FA}
 .party-name{font-size:15px;font-weight:800;color:#0A0F1E;margin-bottom:5px}
 .party p{font-size:11px;color:#555;margin-bottom:2px}
 .party .gstin{font-size:10px;color:#0060FF;font-weight:700;margin-top:6px}
@@ -131,7 +124,7 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a2e;fo
 .tbl .sub-row td{background:#F6F8FF;font-size:12px;color:#555;padding:8px 14px}
 .tbl .gst-row td{background:#F6F8FF;font-size:12px;color:#555;padding:8px 14px}
 .tbl .total-row td{background:#0A0F1E;color:#fff;font-size:14px;font-weight:800;padding:12px 14px}
-.tbl .total-row td.r{color:#00D4AA;font-size:18px}
+.tbl .total-row td.r{color:#60A5FA;font-size:18px}
 
 /* BOTTOM GRID */
 .bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:22px}
@@ -163,7 +156,7 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a2e;fo
 /* FOOTER */
 .footer{background:#0A0F1E;padding:13px 44px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
 .footer p{font-size:10px;color:rgba(255,255,255,0.4)}
-.footer .hi{color:#00D4AA;font-weight:700}
+.footer .hi{color:#60A5FA;font-weight:700}
 </style></head>
 <body><div class="page">
 
@@ -171,7 +164,7 @@ ${isPaid ? '<div class="watermark">PAID</div>' : isOverdue ? '<div class="waterm
 
 <!-- HEADER -->
 <div class="header">
-  <div>${logo}</div>
+  <div>${LOGO_IMG_TAG(36)}</div>
   <div class="header-right">
     <div class="inv-word">INVOICE</div>
     <div class="inv-num">${invoiceNum}</div>
