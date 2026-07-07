@@ -11,12 +11,12 @@ import { createServerClient } from '@supabase/ssr'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const accessToken = searchParams.get('access_token')
+  const refreshToken = searchParams.get('refresh_token')
   const type = searchParams.get('type')   // 'recovery' for password reset
   const next = searchParams.get('next') ?? (type === 'recovery' ? '/settings' : '/dashboard')
 
   const response = NextResponse.redirect(`${origin}${next}`)
-
-  if (!code) return response
 
   const supabaseUrl     = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -31,6 +31,21 @@ export async function GET(request: NextRequest) {
       },
     },
   })
+
+  // If redirected from CRM with session tokens
+  if (accessToken && refreshToken) {
+    const { error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    })
+    if (error) {
+      console.error('[portal/auth/callback] setSession failed:', error.message)
+      return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+    }
+    return response
+  }
+
+  if (!code) return response
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 

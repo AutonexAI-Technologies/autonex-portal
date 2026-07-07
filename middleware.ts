@@ -27,7 +27,10 @@ export async function middleware(request: NextRequest) {
   const isPublicPath = (
     pathname.startsWith('/login') ||
     pathname.startsWith('/invite') ||
+    pathname.startsWith('/forgot-password') ||
     pathname.startsWith('/reset-password') ||
+    pathname.startsWith('/auth') ||          // covers /auth/callback for magic links & recovery
+    pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/portal/accept') ||
     (pathname === '/api/portal/invite' && method === 'GET')
   )
@@ -150,5 +153,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|images).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|images|logo.png|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)'],
 }
