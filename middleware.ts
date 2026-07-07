@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
+
+/**
+ * Creates a service-role admin client that bypasses RLS.
+ * Used in middleware to check portal_users existence without
+ * being blocked by RLS policies that depend on client session state.
+ */
+function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -18,7 +32,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Create supabase server client
+  // Create supabase server client for session/auth verification
   let response = NextResponse.next({ request })
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,7 +52,33 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const email = user?.email?.toLowerCase()
 
-  // API Route Security
+  // ── Block team members from accessing the client portal ──────────────────
+  if (user) {
+    const userType = user.app_metadata?.user_type
+    if (userType === 'team') {
+      const url = new URL('/login', request.url)
+      url.searchParams.set('error', 'access_denied')
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // ── Helper: check portal_users via admin client (bypasses RLS) ───────────
+  async function isValidPortalUser(userEmail: string): Promise<boolean> {
+    try {
+      const admin = createAdminClient()
+      const { data } = await admin
+        .from('portal_users')
+        .select('id')
+        .eq('email', userEmail)
+        .maybeSingle()
+      return !!data
+    } catch {
+      // On error, fail open (allow through) to avoid locking out valid users
+      return true
+    }
+  }
+
+  // ── API Route Security ───────────────────────────────────────────────────
   if (pathname.startsWith('/api')) {
     if (!user) {
       return new NextResponse(
@@ -48,15 +88,10 @@ export async function middleware(request: NextRequest) {
     }
 
     if (email) {
-      const { data: portalUser } = await supabase
-        .from('portal_users')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle()
-
-      if (!portalUser) {
+      const valid = await isValidPortalUser(email)
+      if (!valid) {
         return new NextResponse(
-          JSON.stringify({ error: 'Access Denied: Your account is deactivated' }),
+          JSON.stringify({ error: 'Access Denied: Your account has been deactivated' }),
           { status: 403, headers: { 'Content-Type': 'application/json' } }
         )
       }
@@ -64,25 +99,19 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
-  // Page Route Security: Redirect unauthenticated users to login
+  // ── Page Route Security ──────────────────────────────────────────────────
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Verify client portal user is active and exists in the database
   if (email) {
-    const { data: portalUser } = await supabase
-      .from('portal_users')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle()
-
-    if (!portalUser) {
+    const valid = await isValidPortalUser(email)
+    if (!valid) {
       const url = new URL('/login', request.url)
       url.searchParams.set('error', 'access_denied')
       const res = NextResponse.redirect(url)
-      
-      // Clear all Supabase cookies to log them out
+
+      // Clear all Supabase session cookies to fully log them out
       request.cookies.getAll().forEach(cookie => {
         if (cookie.name.includes('supabase') || cookie.name.startsWith('sb-')) {
           res.cookies.delete(cookie.name)
@@ -90,12 +119,6 @@ export async function middleware(request: NextRequest) {
       })
       return res
     }
-  }
-
-  // Only block if user_type is explicitly set to 'team' (internal staff)
-  const userType = user.app_metadata?.user_type
-  if (userType === 'team') {
-    return NextResponse.redirect(new URL('/login?error=access_denied', request.url))
   }
 
   // Redirect root to dashboard
