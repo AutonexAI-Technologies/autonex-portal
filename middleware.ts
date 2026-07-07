@@ -3,10 +3,18 @@ import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const method = request.method
 
-  // Public auth routes — always accessible
-  const publicPaths = ['/login', '/invite', '/reset-password']
-  if (publicPaths.some(p => pathname.startsWith(p))) {
+  // Public auth paths (always accessible)
+  const isPublicPath = (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/invite') ||
+    pathname.startsWith('/reset-password') ||
+    pathname.startsWith('/api/portal/accept') ||
+    (pathname === '/api/portal/invite' && method === 'GET')
+  )
+
+  if (isPublicPath) {
     return NextResponse.next()
   }
 
@@ -30,7 +38,33 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const email = user?.email?.toLowerCase()
 
-  // Redirect unauthenticated users to login
+  // API Route Security
+  if (pathname.startsWith('/api')) {
+    if (!user) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Unauthorized: Authentication required' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (email) {
+      const { data: portalUser } = await supabase
+        .from('portal_users')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle()
+
+      if (!portalUser) {
+        return new NextResponse(
+          JSON.stringify({ error: 'Access Denied: Your account is deactivated' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+    return response
+  }
+
+  // Page Route Security: Redirect unauthenticated users to login
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
@@ -73,5 +107,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|icons|images).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|images).*)'],
 }
