@@ -5,78 +5,68 @@ import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck, AlertTriangle, ArrowRight, Sparkles } from 'lucide-react'
+import { Mail, Lock, Loader2, Eye, EyeOff, AlertTriangle, ArrowRight } from 'lucide-react'
 
-/* ── Animated background ────────────────────────────────────────── */
-function Background() {
+/* ─── Cream-bg ghost letters ────────────────────────────────────── */
+function GhostBg() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <motion.div
-        animate={{ x: [0, 25, 0], y: [0, -30, 0], scale: [1, 1.06, 1] }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-[-15%] right-[5%] w-[700px] h-[700px] rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)' }}
-      />
-      <motion.div
-        animate={{ x: [0, -20, 0], y: [0, 25, 0], scale: [1, 1.04, 1] }}
-        transition={{ duration: 24, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
-        className="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)' }}
-      />
-      <motion.div
-        animate={{ scale: [1, 1.08, 1], opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        className="absolute top-[40%] left-[40%] w-[400px] h-[400px] rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)' }}
-      />
-      {/* Dot pattern */}
-      <div className="absolute inset-0 opacity-[0.02]"
-        style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+    <div
+      aria-hidden
+      className="absolute inset-0 flex items-end justify-end overflow-hidden pointer-events-none select-none"
+      style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 'clamp(120px, 20vw, 280px)',
+        lineHeight: 0.88,
+        letterSpacing: '0.02em',
+        color: 'rgba(26,26,26,0.045)',
+        padding: '0 16px 0 0',
+      }}
+    >
+      CLIENT
     </div>
   )
 }
 
-/* ── Input component ────────────────────────────────────────────── */
-function PremiumInput({
-  id, type, value, onChange, placeholder, icon: Icon, rightEl, label, autoComplete,
+/* ─── Input ──────────────────────────────────────────────────────── */
+function Field({
+  id, type, value, onChange, placeholder, icon: Icon, right, label, autoComplete,
 }: {
   id: string; type: string; value: string; onChange: (v: string) => void
-  placeholder: string; icon: any; rightEl?: React.ReactNode; label: string; autoComplete?: string
+  placeholder: string; icon: any; right?: React.ReactNode; label: string; autoComplete?: string
 }) {
   const [focused, setFocused] = useState(false)
   return (
     <div>
-      <label htmlFor={id} className="block text-[11px] font-semibold uppercase tracking-widest mb-2"
-        style={{ color: 'rgba(148,163,184,0.6)' }}>{label}</label>
-      <div className="relative flex items-center rounded-[14px] transition-all duration-200"
-        style={{
-          background: focused ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.04)',
-          border: focused ? '1px solid rgba(124,58,237,0.5)' : '1px solid rgba(255,255,255,0.08)',
-          boxShadow: focused ? '0 0 0 3px rgba(124,58,237,0.1)' : 'none',
-        }}>
-        <Icon className="absolute left-3.5 w-4 h-4 shrink-0"
-          style={{ color: focused ? 'rgba(167,139,250,0.8)' : 'rgba(100,116,139,0.5)' }} />
+      <label htmlFor={id}
+        style={{ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: focused ? '#1A1A1A' : 'rgba(26,26,26,0.45)', marginBottom: '8px', fontFamily: "'Inter', sans-serif", transition: 'color 0.2s' }}>
+        {label}
+      </label>
+      <div className="relative">
+        <Icon style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', width: '15px', height: '15px', color: focused ? '#1A1A1A' : 'rgba(26,26,26,0.3)', transition: 'color 0.2s' }} />
         <input
-          id={id} type={type} value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={placeholder}
-          required
-          autoComplete={autoComplete}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          id={id} type={type} value={value} onChange={e => onChange(e.target.value)}
+          placeholder={placeholder} required autoComplete={autoComplete}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{
-            width: '100%', paddingLeft: '2.75rem', paddingRight: rightEl ? '2.75rem' : '1rem',
-            height: '48px', background: 'transparent', color: '#f1f5f9',
-            fontSize: '14px', outline: 'none',
+            width: '100%', paddingLeft: '44px', paddingRight: right ? '44px' : '16px',
+            height: '52px', fontFamily: "'Inter', sans-serif", fontSize: '14px',
+            background: focused ? '#FFFFFF' : 'rgba(26,26,26,0.05)',
+            border: focused ? '2px solid #1A1A1A' : '2px solid transparent',
+            borderRadius: '4px', color: '#1A1A1A', outline: 'none',
+            transition: 'all 0.2s ease',
           }}
         />
-        {rightEl && <div className="absolute right-3">{rightEl}</div>}
+        {right && (
+          <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)' }}>
+            {right}
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-/* ── Login Form ─────────────────────────────────────────────────── */
+/* ─── Login Form ─────────────────────────────────────────────────── */
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -94,9 +84,7 @@ function LoginForm() {
     setLoading(true)
     const { error: err } = await supabase.auth.signInWithPassword({ email, password })
     if (err) {
-      setError(err.message === 'Invalid login credentials'
-        ? 'Invalid email or password. Please check your credentials.'
-        : err.message)
+      setError('Invalid email or password. Please check your credentials.')
       setLoading(false)
       return
     }
@@ -105,170 +93,154 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(160deg, #060912 0%, #09101e 40%, #060912 100%)' }}>
-      <Background />
+    <div
+      style={{ minHeight: '100vh', display: 'flex', background: '#F0EEEA', fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}
+    >
+      <GhostBg />
 
-      <motion.div
-        initial={{ opacity: 0, y: 32, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-[420px]"
+      {/* ─── Left: brand column ─── */}
+      <div
+        className="hidden lg:flex flex-col justify-between"
+        style={{ width: '40%', background: '#1A1A1A', padding: '48px', position: 'relative', overflow: 'hidden', flexShrink: 0 }}
       >
-        {/* Brand Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="text-center mb-8"
-        >
-          <div className="inline-flex flex-col items-center gap-3">
-            <div className="relative">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.12))',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  boxShadow: '0 0 40px rgba(124,58,237,0.2)',
-                }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.png" alt="Autonex AI" className="w-9 h-9 object-contain" />
-              </div>
-              <div className="absolute -inset-2 rounded-3xl blur-xl opacity-25"
-                style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.6), rgba(6,182,212,0.4))' }} />
-            </div>
-            <div>
-              <h1 className="text-[15px] font-black tracking-[0.22em] uppercase" style={{ color: '#f1f5f9' }}>
-                AUTONEX AI
-              </h1>
-              <p className="text-[10px] tracking-[0.14em] uppercase mt-0.5" style={{ color: 'rgba(148,163,184,0.4)' }}>
-                Client Portal
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18, duration: 0.45 }}
+        {/* Ghost letters on dark panel */}
+        <div
+          aria-hidden
           style={{
-            background: 'rgba(255,255,255,0.035)',
-            border: '1px solid rgba(255,255,255,0.09)',
-            borderRadius: '24px',
-            padding: '32px',
-            backdropFilter: 'blur(32px)',
-            WebkitBackdropFilter: 'blur(32px)',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)',
+            position: 'absolute', bottom: '-10px', left: 0, right: 0,
+            fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(80px, 10vw, 160px)',
+            lineHeight: 0.88, letterSpacing: '0.02em', color: 'rgba(240,238,234,0.04)',
+            paddingLeft: '24px', pointerEvents: 'none', userSelect: 'none',
           }}
         >
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-violet-400" />
-              <h2 className="text-[18px] font-bold text-white">Welcome back</h2>
-            </div>
-            <p className="text-[12px]" style={{ color: 'rgba(148,163,184,0.5)' }}>
-              Sign in to view your project updates and files
-            </p>
+          PORTAL
+        </div>
+
+        {/* Logo */}
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Autonex AI" style={{ height: '30px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          </div>
+          <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '16px', color: 'rgba(240,238,234,0.5)', letterSpacing: '0.18em', marginTop: '6px' }}>AUTONEX AI</p>
+        </div>
+
+        {/* Bottom copy */}
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <div style={{ height: '1px', background: 'rgba(240,238,234,0.12)', marginBottom: '28px' }} />
+          <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(36px,4vw,56px)', color: '#F0EEEA', letterSpacing: '0.03em', lineHeight: 0.92, marginBottom: '16px' }}>
+            YOUR PROJECT.<br />YOUR PORTAL.<br />YOUR TEAM.
+          </p>
+          <p style={{ fontSize: '12px', color: 'rgba(240,238,234,0.4)', lineHeight: 1.6 }}>
+            Track progress, download deliverables,<br />and communicate with your team.
+          </p>
+        </div>
+      </div>
+
+      {/* ─── Right: form ─── */}
+      <div
+        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 32px', position: 'relative', zIndex: 1 }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          style={{ width: '100%', maxWidth: '380px' }}
+        >
+          {/* Mobile logo */}
+          <div className="flex lg:hidden items-center gap-3 mb-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Autonex AI" style={{ height: '28px', objectFit: 'contain' }} />
+            <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '16px', color: '#1A1A1A', letterSpacing: '0.18em' }}>AUTONEX AI</p>
           </div>
 
-          {/* Error alerts */}
+          {/* Heading */}
+          <div style={{ marginBottom: '40px' }}>
+            <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.4)', marginBottom: '12px' }}>
+              Client Portal
+            </p>
+            <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(42px,5vw,64px)', color: '#1A1A1A', letterSpacing: '0.03em', lineHeight: 0.9, margin: 0 }}>
+              WELCOME<br />BACK
+            </h1>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: '1px', background: 'rgba(26,26,26,0.10)', marginBottom: '32px' }} />
+
+          {/* Errors */}
           <AnimatePresence>
-            {errorParam === 'access_denied' && (
+            {(errorParam === 'access_denied' || error) && (
               <motion.div
-                initial={{ opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                className="mb-5 p-3.5 rounded-2xl border border-red-500/25 flex gap-2.5 items-start"
-                style={{ background: 'rgba(239,68,68,0.07)' }}
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                style={{ overflow: 'hidden', marginBottom: '20px' }}
               >
-                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-[12px] font-bold text-red-300 mb-0.5">Access Denied</p>
-                  <p className="text-[11px] text-red-400/70 leading-relaxed">
-                    Your account is deactivated or has been removed from this Portal workspace.
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '14px', background: 'rgba(220,38,38,0.07)', border: '1px solid rgba(220,38,38,0.18)', borderRadius: '4px' }}>
+                  <AlertTriangle style={{ width: '15px', height: '15px', color: '#dc2626', flexShrink: 0, marginTop: '1px' }} />
+                  <p style={{ fontSize: '12px', color: '#dc2626', lineHeight: 1.5 }}>
+                    {errorParam === 'access_denied'
+                      ? 'Your account is deactivated or has been removed from this Portal.'
+                      : error}
                   </p>
                 </div>
               </motion.div>
             )}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                className="mb-5 p-3.5 rounded-2xl border border-red-500/25 flex gap-2.5 items-start"
-                style={{ background: 'rgba(239,68,68,0.07)' }}
-              >
-                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <p className="text-[12px] text-red-300 leading-relaxed">{error}</p>
-              </motion.div>
-            )}
           </AnimatePresence>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <PremiumInput
-              id="portal-email" type="email" value={email} onChange={setEmail}
-              placeholder="your@email.com" icon={Mail} label="Email Address"
-              autoComplete="email"
-            />
-            <PremiumInput
-              id="portal-password"
-              type={showPw ? 'text' : 'password'}
-              value={password} onChange={setPassword}
-              placeholder="••••••••" icon={Lock} label="Password"
-              autoComplete="current-password"
-              rightEl={
+          {/* Form */}
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Field id="portal-email" type="email" value={email} onChange={setEmail}
+              placeholder="your@email.com" icon={Mail} label="Email Address" autoComplete="email" />
+            <Field id="portal-password"
+              type={showPw ? 'text' : 'password'} value={password} onChange={setPassword}
+              placeholder="••••••••" icon={Lock} label="Password" autoComplete="current-password"
+              right={
                 <button type="button" onClick={() => setShowPw(!showPw)}
-                  className="transition-colors" style={{ color: 'rgba(100,116,139,0.55)' }}>
-                  {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  style={{ color: 'rgba(26,26,26,0.3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+                  {showPw ? <EyeOff style={{ width: '15px', height: '15px' }} /> : <Eye style={{ width: '15px', height: '15px' }} />}
                 </button>
               }
             />
+
+            <div style={{ textAlign: 'right', marginTop: '-8px' }}>
+              <a href="/forgot-password"
+                style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.4)', textDecoration: 'none', transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#1A1A1A')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(26,26,26,0.4)')}
+              >
+                Forgot password?
+              </a>
+            </div>
 
             <motion.button
               id="portal-login-btn"
               type="submit"
               disabled={loading || !email || !password}
-              whileHover={{ scale: loading ? 1 : 1.01 }}
-              whileTap={{ scale: loading ? 1 : 0.98 }}
-              className="w-full flex items-center justify-center gap-2 font-semibold transition-all"
+              whileHover={{ scale: loading || !email || !password ? 1 : 1.01 }}
+              whileTap={{ scale: loading || !email || !password ? 1 : 0.98 }}
               style={{
-                height: '50px', borderRadius: '14px', fontSize: '14px', color: '#fff',
-                background: loading || !email || !password
-                  ? 'rgba(124,58,237,0.3)'
-                  : 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
-                boxShadow: loading || !email || !password ? 'none' : '0 8px 24px rgba(124,58,237,0.35)',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                marginTop: '8px', border: 'none',
+                height: '52px', width: '100%', marginTop: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontFamily: "'Inter', sans-serif", fontSize: '12px', fontWeight: 700,
+                letterSpacing: '0.14em', textTransform: 'uppercase',
+                background: loading || !email || !password ? 'rgba(26,26,26,0.2)' : '#1A1A1A',
+                color: loading || !email || !password ? 'rgba(26,26,26,0.4)' : '#F0EEEA',
+                border: '2px solid transparent', borderRadius: '4px',
+                cursor: loading || !email || !password ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
               }}
             >
               {loading
-                ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Signing in…</span></>
-                : <><span>Access Portal</span><ArrowRight className="w-4 h-4" /></>
+                ? <><Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} /><span>Signing in…</span></>
+                : <><span>Access Portal</span><ArrowRight style={{ width: '15px', height: '15px' }} /></>
               }
             </motion.button>
           </form>
 
-          <div className="flex items-center justify-between mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <a href="/forgot-password"
-              className="text-[12px] font-medium transition-colors hover:opacity-80"
-              style={{ color: '#a78bfa' }}>
-              Forgot password?
-            </a>
-            <div className="flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(148,163,184,0.3)' }}>
-              <ShieldCheck className="w-3 h-3" />
-              <span>End-to-end encrypted</span>
-            </div>
-          </div>
+          <p style={{ marginTop: '40px', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(26,26,26,0.25)', textAlign: 'center' }}>
+            PORTAL ACCESS IS INVITE-ONLY · AUTONEX AI © 2025
+          </p>
         </motion.div>
-
-        {/* Footer note */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-[10px] mt-5"
-          style={{ color: 'rgba(148,163,184,0.2)' }}
-        >
-          Portal access is invite-only · Autonex AI Technologies © 2025
-        </motion.p>
-      </motion.div>
+      </div>
     </div>
   )
 }
@@ -276,8 +248,8 @@ function LoginForm() {
 export default function PortalLoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#060912' }}>
-        <Loader2 className="w-6 h-6 text-violet-500 animate-spin" />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F0EEEA' }}>
+        <Loader2 style={{ width: '24px', height: '24px', color: '#1A1A1A', animation: 'spin 1s linear infinite' }} />
       </div>
     }>
       <LoginForm />

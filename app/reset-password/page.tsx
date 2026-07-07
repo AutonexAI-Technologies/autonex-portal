@@ -3,104 +3,100 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 
+// This page is also reachable via /forgot-password redirect but we keep this
+// as a standalone "send reset email" page too.
 export default function ResetPasswordPage() {
   const supabase = createClient()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+  const [focused, setFocused] = useState(false)
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true)
-    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/settings` })
-    setSent(true); setLoading(false)
+    e.preventDefault(); setLoading(true); setError('')
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/settings`,
+    })
+    if (err) { setError(err.message); setLoading(false) }
+    else { setSent(true); setLoading(false) }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
-      {/* Ambient blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[360px] bg-blue-200/30 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-violet-200/20 rounded-full blur-[100px]" />
+    <div
+      style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', background: '#F0EEEA', fontFamily: "'Inter', sans-serif", position: 'relative', overflow: 'hidden' }}
+    >
+      {/* Ghost text */}
+      <div aria-hidden style={{ position: 'absolute', bottom: '-10px', left: 0, right: 0, textAlign: 'center', fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(100px, 16vw, 220px)', lineHeight: 0.88, letterSpacing: '0.02em', color: 'rgba(26,26,26,0.04)', pointerEvents: 'none', userSelect: 'none' }}>
+        RESET
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-sm"
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{ width: '100%', maxWidth: '400px', position: 'relative', zIndex: 1 }}
       >
-        <Link href="/login" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-600 mb-6 transition-colors">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to login
+        <Link href="/login"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.4)', marginBottom: '40px', textDecoration: 'none', transition: 'color 0.2s' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#1A1A1A')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(26,26,26,0.4)')}
+        >
+          <ArrowLeft style={{ width: '13px', height: '13px' }} />
+          Back to Login
         </Link>
 
-        {/* Official Autonex AI Logo */}
-        <div className="text-center mb-6">
-          <div style={{ background: '#1A3566', borderRadius: '14px', padding: '14px 32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
-              alt="Autonex AI"
-              style={{ height: 48, objectFit: 'contain', display: 'block' }}
-            />
-          </div>
-          <p className="text-slate-500 text-sm">Reset your portal password</p>
-        </div>
+        <AnimatePresence mode="wait">
+          {sent ? (
+            <motion.div key="sent" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center', padding: '32px 0' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(26,26,26,0.06)', border: '1px solid rgba(26,26,26,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                <CheckCircle2 style={{ width: '26px', height: '26px', color: '#1A1A1A' }} />
+              </div>
+              <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '48px', color: '#1A1A1A', letterSpacing: '0.04em', lineHeight: 0.92, marginBottom: '16px' }}>CHECK YOUR INBOX</h2>
+              <p style={{ fontSize: '13px', color: 'rgba(26,26,26,0.5)', lineHeight: 1.6, marginBottom: '6px' }}>Reset link sent to</p>
+              <p style={{ fontSize: '14px', fontWeight: 600, color: '#1A1A1A', marginBottom: '24px' }}>{email}</p>
+              <p style={{ fontSize: '11px', color: 'rgba(26,26,26,0.35)', lineHeight: 1.6 }}>Didn't receive it? Check your spam folder. Link expires in 1 hour.</p>
+              <Link href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.4)', marginTop: '28px', textDecoration: 'none' }}>
+                <ArrowLeft style={{ width: '13px', height: '13px' }} />Return to Login
+              </Link>
+            </motion.div>
+          ) : (
+            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.4)', marginBottom: '12px' }}>Client Portal</p>
+              <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(42px,6vw,64px)', color: '#1A1A1A', letterSpacing: '0.03em', lineHeight: 0.9, marginBottom: '16px' }}>FORGOT<br />PASSWORD?</h1>
+              <p style={{ fontSize: '13px', color: 'rgba(26,26,26,0.5)', lineHeight: 1.6, marginBottom: '32px' }}>Enter your email and we'll send you a secure reset link.</p>
+              <div style={{ height: '1px', background: 'rgba(26,26,26,0.1)', marginBottom: '32px' }} />
 
-        {sent ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 text-center"
-          >
-            <CheckCircle2 className="w-12 h-12 text-blue-500 mx-auto mb-4" />
-            <h2 className="text-lg font-bold text-slate-900 mb-2">Check your email</h2>
-            <p className="text-slate-500 text-sm">
-              We've sent a reset link to <strong className="text-slate-800">{email}</strong>
-            </p>
-            <p className="text-slate-400 text-xs mt-3">Didn't receive it? Check your spam folder.</p>
-          </motion.div>
-        ) : (
-          <motion.form
-            onSubmit={submit}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 space-y-5"
-          >
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900 mb-1">Forgot password?</h2>
-              <p className="text-slate-500 text-sm">Enter your email to receive a reset link</p>
-            </div>
+              {error && (
+                <div style={{ padding: '12px 14px', background: 'rgba(220,38,38,0.07)', border: '1px solid rgba(220,38,38,0.18)', borderRadius: '4px', fontSize: '12px', color: '#dc2626', marginBottom: '16px' }}>{error}</div>
+              )}
 
-            <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                required
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-slate-400 transition-all"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || !email}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Reset Link →'}
-            </button>
-          </motion.form>
-        )}
-
-        <p className="text-center text-slate-400 text-xs mt-6">
-          Invitation-only access · Autonex AI Technologies
-        </p>
+              <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label htmlFor="portal-reset-email" style={{ display: 'block', fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: focused ? '#1A1A1A' : 'rgba(26,26,26,0.4)', marginBottom: '8px', transition: 'color 0.2s' }}>Email Address</label>
+                  <div style={{ position: 'relative' }}>
+                    <Mail style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', width: '15px', height: '15px', color: focused ? '#1A1A1A' : 'rgba(26,26,26,0.3)', transition: 'color 0.2s' }} />
+                    <input
+                      id="portal-reset-email" type="email" value={email} onChange={e => setEmail(e.target.value)}
+                      placeholder="your@email.com" required autoComplete="email"
+                      onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+                      style={{ width: '100%', paddingLeft: '44px', paddingRight: '16px', height: '52px', fontFamily: "'Inter', sans-serif", fontSize: '14px', background: focused ? '#fff' : 'rgba(26,26,26,0.05)', border: focused ? '2px solid #1A1A1A' : '2px solid transparent', borderRadius: '4px', color: '#1A1A1A', outline: 'none', transition: 'all 0.2s' }}
+                    />
+                  </div>
+                </div>
+                <button type="submit" disabled={loading || !email}
+                  style={{ height: '52px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: "'Inter', sans-serif", fontSize: '12px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', background: loading || !email ? 'rgba(26,26,26,0.2)' : '#1A1A1A', color: loading || !email ? 'rgba(26,26,26,0.4)' : '#F0EEEA', border: 'none', borderRadius: '4px', cursor: loading || !email ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}>
+                  {loading ? <><Loader2 style={{ width: '15px', height: '15px', animation: 'spin 1s linear infinite' }} /><span>Sending…</span></> : <span>Send Reset Link →</span>}
+                </button>
+              </form>
+              <p style={{ marginTop: '32px', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(26,26,26,0.25)', textAlign: 'center' }}>INVITE-ONLY PORTAL · AUTONEX AI TECHNOLOGIES</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   )
