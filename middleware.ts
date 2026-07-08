@@ -29,7 +29,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/invite') ||
     pathname.startsWith('/forgot-password') ||
     pathname.startsWith('/reset-password') ||
-    pathname.startsWith('/auth') ||          // covers /auth/callback for magic links & recovery
+    pathname.startsWith('/change-password') ||   // password reset landing page
+    pathname.startsWith('/auth') ||              // covers /auth/callback for magic links & recovery
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/portal/accept') ||
     (pathname === '/api/portal/invite' && method === 'GET')

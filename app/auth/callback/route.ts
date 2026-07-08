@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   const accessToken = searchParams.get('access_token')
   const refreshToken = searchParams.get('refresh_token')
   const type = searchParams.get('type')   // 'recovery' for password reset
-  const next = searchParams.get('next') ?? (type === 'recovery' ? '/settings' : '/dashboard')
+  const next = searchParams.get('next') ?? (type === 'recovery' ? '/change-password' : '/dashboard')
 
   const response = NextResponse.redirect(`${origin}${next}`)
 
